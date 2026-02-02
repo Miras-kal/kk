@@ -4,16 +4,16 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
-include '../includes/config.php';
+include '../../includes/config.php';
 
 // Тек әкімшілерге рұқсат ету
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+if (!is_admin()) {
     header('Location: ../login.php');
     exit;
 }
 
 $page_title = "Тапсырыс ақпараты";
-include '../includes/admin_header.php';
+include '../../includes/admin_header.php';
 
 // Тапсырыс ID-сын алу
 $order_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -30,7 +30,7 @@ $order = $stmt->fetch();
 
 if (!$order) {
     echo '<div class="alert alert-danger">Тапсырыс табылмады</div>';
-    include '../includes/admin_footer.php';
+    include '../../includes/admin_footer.php';
     exit;
 }
 
@@ -155,4 +155,4 @@ $order_items = $stmt->fetchAll();
     </div>
 </div>
 
-<?php include '../includes/admin_footer.php'; ?>
+<?php include '../../includes/admin_footer.php'; ?>

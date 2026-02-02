@@ -9,11 +9,21 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // 2. База параметрлері (константалар)
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'ecommerce_db');
-define('DB_USER', 'root');
-define('DB_PASS', 'root');
-define('DB_CHARSET', 'utf8mb4'); // utf8 орнына utf8mb4 қолданыңыз
+if (!defined('DB_HOST')) {
+    define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+}
+if (!defined('DB_NAME')) {
+    define('DB_NAME', getenv('DB_NAME') ?: 'ecommerce_db');
+}
+if (!defined('DB_USER')) {
+    define('DB_USER', getenv('DB_USER') ?: 'root');
+}
+if (!defined('DB_PASS')) {
+    define('DB_PASS', getenv('DB_PASS') ?: 'root');
+}
+if (!defined('DB_CHARSET')) {
+    define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
+}
 
 // 3. PDO байланысы
 try {
@@ -51,11 +61,11 @@ if (!function_exists('is_admin')) {
         // Базадан тексеру (сессияға сенбеу)
         global $pdo;
         try {
-            $stmt = $pdo->prepare("SELECT is_admin FROM users WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT is_admin, role FROM users WHERE id = ?");
             $stmt->execute([$_SESSION['user_id']]);
             $user = $stmt->fetch();
             
-            return $user && $user['is_admin'] == 1;
+            return $user && ((int)$user['is_admin'] === 1 || $user['role'] === 'admin');
         } catch (PDOException $e) {
             error_log("Admin check error: ".$e->getMessage());
             return false;
