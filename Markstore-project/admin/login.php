@@ -3,7 +3,7 @@
 include '../includes/config.php';
 
 // Егер админ жүйеге кірген болса, негізгі бетке бағыттау
-if (is_logged_in() && $_SESSION['is_admin'] === 1) {
+if (is_logged_in() && is_admin()) {
     redirect('orders/detalis.php'); // немесе сіздің админ панелі жолыңыз
 }
 
@@ -20,12 +20,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$email]);
     $user = $stmt->fetch();
     
-    // Құпия сөзді тексеру
-    if ($user && password_verify($password, $user['password']) && $user['is_admin'] == 1) {
+    // Құпия сөзді тексеру (хэш немесе ашық мәтін)
+    $password_matches = $user && ($user['password'] === $password || password_verify($password, $user['password']));
+
+    if ($password_matches && ((int)$user['is_admin'] === 1 || $user['role'] === 'admin')) {
         // Егер дұрыс болса, админді сессияға қосу
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['is_admin'] = $user['is_admin'];
+        $_SESSION['user_role'] = $user['role'];
         
         $return_url = $_GET['return_url'] ?? '/dashboard.php'; // Админ панелі
         redirect($return_url);
